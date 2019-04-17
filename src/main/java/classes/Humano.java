@@ -1,12 +1,9 @@
 package classes;
 /*-Decidi agregar la variable int limite porque me parece justo que haya una variable la cual se vea afectada
 * por tolerancia(espartano) y bebedor profesional(vikingo)
-* En el caso de Vikingo, a la hora de crearse, se le atribuira, ademas del limite establecido por lo ingresado en el new,
-* la cantidad de anios por dos que es bebedor.
-* En el caso de Espartano, a la hora de beber, en caso que su limite llegue a 0, se le atribuira la cantidad
-* establecida por la tolerancia extra.
-*
-* De esta forma, por cada vuelta (es decir, por cada bebida por ambos) se le ira restando su limite*/
+* En el caso de Vikingo,  se le sumara al limite establecido la cantidad de anios por dos que es bebedor.
+* En el caso de Espartano, se le sumata al limite establecido la tolerancia que tiene
+**/
 
 import interfaces.Beber;
 import interfaces.Orinar;
@@ -17,7 +14,14 @@ public class Humano {
     private int peso;
     private Orinar orinar;
     private Beber beber;
-    private int limite;
+    private int limite;//limite va a cumplir la funcion de indicarnos el limite del espartano/vikingo. Esta variable es constante ya que el limite no se puede mmodificar; siempre va a ser el mismo
+    private int bebidaEnCuerpo;//esta variable sera la encargada de mostrarnos la bebida en cuerpo
+
+
+
+    public Humano(){
+
+    }
 
     public Humano(String nombre, int edad, int peso, Orinar orinar, Beber beber, int limite) {
         this.nombre = nombre;
@@ -26,6 +30,7 @@ public class Humano {
         this.orinar = orinar;
         this.beber = beber;
         this.limite=limite;
+        this.bebidaEnCuerpo=0;//lo pongo en cero ya que al principio no tomo nada
     }
 
     public String getNombre() {
@@ -66,9 +71,14 @@ public class Humano {
         return limite;
     }
 
-    public void setLimite(int limite) {
-        this.limite = peso;
+    public int getBebidaEnCuerpo() {
+        return bebidaEnCuerpo;
     }
+
+    public void setBebidaEnCuerpo(int bebidaEnCuerpo) {
+        this.bebidaEnCuerpo = bebidaEnCuerpo;
+    }
+
 
     @Override
     public String toString() {

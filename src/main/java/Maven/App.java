@@ -2,6 +2,7 @@ package Maven;
 
 import classes.*;
 
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -37,23 +38,60 @@ public class App
         int aleatorioEspartanos = (int)Math.floor(Math.random()*(sortedListEspartano.size()));
 
 
-        String ganador=competir(sortedListVikingos.get(aleatorioVikingos),sortedListEspartano.get(aleatorioEspartanos));
+        Humano ganador=competir(sortedListVikingos.get(aleatorioVikingos),sortedListEspartano.get(aleatorioEspartanos));
 
-        System.out.println("\n\n---------------------------FIN-------------------------------------");
-        System.out.println("Ha ganado "+ ganador +" .Felicidades al equipo ganador!");
+        if(ganador instanceof Vikingo){
+            System.out.println("\n\n---------------------------FIN-------------------------------------");
+            System.out.println("Ha ganado "+ ganador.getNombre() +" .Felicidades al equipo VIKINGOS!");
+        }else
+        {
+            System.out.println("\n\n---------------------------FIN-------------------------------------");
+            System.out.println("Ha ganado "+ ganador.getNombre() +" .Felicidades al equipo ESPARTANOS!");
+        }
+
 
     /*PENDIENTE:
-    * - Persistir el resultado en base de datos,
+    * - Persistir el resultado en base de datos. REALIZADO EN LA VERSION 2
     * - Combate: ganador VS dueño*/
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+
+        }catch (ClassNotFoundException e)
+        {
+            System.out.println("Falta la libreria de mysql!!");
+        }
+
+
+        try {
+            Connection connection= DriverManager.getConnection("jdbc:mysql://localhost/tp1torneodefrescas", "root", "");
+
+            PreparedStatement ps= connection.prepareStatement("INSERT INTO ganadoresDeTorneos(nombre_ganador,bebida_en_cuerpo)"
+                    + "VALUES (?,?);");
+
+            ps.setString(1,ganador.getNombre());
+            ps.setInt(2,ganador.getBebidaEnCuerpo());
+
+            ps.execute();
+
+
+        }catch (SQLException e){
+
+            System.out.println("No se pudo conectar a la base de datos");
+        }
+        catch (Exception e){
+            System.out.println("es otra cosa");
+        }
+
 
 
 
     }
 
 
-    public static String competir(Humano h1, Humano h2)
+    public static Humano competir(Humano h1, Humano h2)
     {
-        String nombreGanador="";
+        Humano ganador=new Humano();
 
         if(h1 instanceof Vikingo && h2 instanceof Espartano){
             Vikingo v= (Vikingo) h1;
@@ -61,6 +99,8 @@ public class App
 
             int limiteE=e.getLimite();
             limiteE= limiteE + e.gettoleranciaExtra();
+            
+            int restoLimiteE=limiteE;//
 
             int limiteV=v.getLimite();
             if(v.getbebedorProfesional() > 3)
@@ -68,68 +108,35 @@ public class App
                 limiteV=limiteV * 2;
 
             }
+            
+            int restoLimiteV=limiteV;//decidi crear estas variables restoLimite para sabe cuantas bebidas tomaron. Esto tendra sentido a la hora de setear la cant de bebidas en el ganador
 
-            while (limiteE > 0 || limiteV > 0){
+            while (restoLimiteE > 0 && restoLimiteV > 0){
 
                 v.beber();
-                limiteV= limiteV - 1;
+                restoLimiteV= restoLimiteV - 1;
 
                 e.beber();
-                limiteE=limiteE - 1;
+                restoLimiteE=restoLimiteE - 1;
 
             }
 
 
-            if(limiteE == 0){
+            if(restoLimiteE == 0){
                 e.orinar();
-                nombreGanador=v.getNombre();
+                ganador=v;
+                v.setBebidaEnCuerpo(limiteV-restoLimiteV);//restoLimite representa cuantas bebidas mas hubiera soportado el humano. Si a eso se lo restamos al limite origina, obtendremos la cantidad de bebidas
             }
 
-            if(limiteV == 0){
+            if(restoLimiteV == 0){
                 v.orinar();
-                nombreGanador=e.getNombre();
+                ganador=e;
+                e.setBebidaEnCuerpo(limiteE-restoLimiteE);//
             }
 
         }
 
-        if(h1 instanceof Vikingo && h2 instanceof Espartano){
-            Vikingo v= (Vikingo) h1;
-            Espartano e= (Espartano) h2;
-
-            int limiteE=e.getLimite();
-            limiteE= limiteE + e.gettoleranciaExtra();
-
-            int limiteV=v.getLimite();
-            if(v.getbebedorProfesional() > 3)
-            {
-                limiteV=limiteV * 2;
-
-            }
-
-            while (limiteE > 0 || limiteV > 0){
-
-                v.beber();
-                limiteV= limiteV - 1;
-
-                e.beber();
-                limiteE=limiteE - 1;
-
-            }
-
-
-            if(limiteE == 0){
-                e.orinar();
-                nombreGanador=v.getNombre();
-            }
-
-            if(limiteV == 0){
-                v.orinar();
-                nombreGanador=e.getNombre();
-            }
-
-        }
-
-        return nombreGanador;
+        return ganador;
     }
 }
 
